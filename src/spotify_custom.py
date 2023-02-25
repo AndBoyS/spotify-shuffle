@@ -45,7 +45,7 @@ async def get_all_tracks_from_playlist(playlist_id, client):
 def with_spotify_scope(func):
     """
     Decorator that inits spotify session
-    Decorated functions must have arguments (client, user)
+    Decorated functions must have keyword arguments client and user
     """
 
     async def wrapper(*args, **kwargs):
@@ -61,8 +61,7 @@ def with_spotify_scope(func):
                 playlist_modify_private=True,
             )
             user = await User.from_token(client, user_token, user_token)
-
-            await func(client, user)
+            await func(*args, **kwargs, client=client, user=user)
             await user.http.close()
 
     return wrapper

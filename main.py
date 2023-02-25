@@ -1,3 +1,4 @@
+import argparse
 import asyncio
 
 from tqdm import tqdm
@@ -6,12 +7,19 @@ import spotify
 from src import spotify_custom, shuffle
 
 
+parser = argparse.ArgumentParser(
+    description = 'Shuffle spotify playlist',
+)
+parser.add_argument('playlist_id', type=str,
+                    help='Playlist id')
+
+playlist_id = parser.parse_args().playlist_id
+
 # playlist_id = '2uBBMdBcJWHPIshXDpze05'
-playlist_id = '0Ry939BofXEcuWuhtGOCMG'
 
 
 @spotify_custom.with_spotify_scope
-async def main(client, user):
+async def main(playlist_id, client, user):
 
     all_tracks = await spotify_custom.get_all_tracks_from_playlist(playlist_id, client)
     num_tracks = len(all_tracks)
@@ -23,4 +31,6 @@ async def main(client, user):
 
 
 if __name__ == '__main__':
-    asyncio.get_event_loop().run_until_complete(main())
+    asyncio.get_event_loop().run_until_complete(
+        main(playlist_id)
+    )
