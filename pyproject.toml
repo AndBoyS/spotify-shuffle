@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "spotify-shuffle"
+version = "0.1.0"
+description = ""
+authors = ["AndBoyS <andboyxd@gmail.com>"]
+readme = "README.md"
+packages = [{include = "spotify_shuffle"}]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+spotify = "^0.10.2"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
