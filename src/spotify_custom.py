@@ -1,3 +1,4 @@
+import os
 from typing import Optional
 
 import spotify
@@ -39,3 +40,29 @@ async def get_all_tracks_from_playlist(playlist_id, client):
     playlist.total_tracks = None
     all_tracks = await playlist.get_all_tracks()
     return all_tracks
+
+
+def with_spotify_scope(func):
+    """
+    Decorator that inits spotify session
+    Decorated functions must have arguments (client, user)
+    """
+
+    async def wrapper(*args, **kwargs):
+        client_id = os.environ['SPOTIFY_CLIENT_ID']
+        secret = os.environ['SPOTIFY_CLIENT_SECRET']
+        user_token = os.environ['SPOTIFY_REFRESH_TOKEN']
+        redirect_uri = 'http://localhost:8888/callback'
+
+        async with spotify.Client(client_id, secret) as client:
+            oauth2 = spotify.OAuth2.from_client(client, redirect_uri)
+            oauth2.set_scopes(
+                playlist_modify_public=True,
+                playlist_modify_private=True,
+            )
+            user = await User.from_token(client, user_token, user_token)
+
+            await func(client, user)
+            await user.http.close()
+
+    return wrapper
