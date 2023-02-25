@@ -9,6 +9,7 @@ packages = [{include = "spotify_shuffle"}]
 [tool.poetry.dependencies]
 python = "^3.9"
 spotify = "^0.10.2"
+tqdm = "^4.64.1"
 
 
 [build-system]
