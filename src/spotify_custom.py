@@ -1,8 +1,6 @@
 import os
-import time
 from typing import Optional, List, Callable
 
-from dateutil import parser
 import spotify
 from spotify import HTTPUserClient
 
@@ -70,37 +68,3 @@ def with_spotify_scope(func: Callable) -> Callable:
             await user.http.close()
 
     return wrapper
-
-
-async def get_recent_tracks(
-        user: spotify.User,
-        limit: int = 50,
-        ) -> List[spotify.Track]:
-
-    def convert_str_to_unix_time(date_str: str) -> str:
-        # Returns unix time in milliseconds
-        date = (parser.parse(date_str))
-        date_unix = date.timestamp() * 1e3
-        return str(int(date_unix))
-
-    max_limit_for_request = 50
-
-    recently_played = []
-    before_date_unix = None
-    tracks_remaining = limit
-
-    while tracks_remaining > 0:
-
-        cur_limit = (tracks_remaining - 1) % max_limit_for_request + 1
-
-        cur_recently_played = await user.recently_played(
-            limit=cur_limit,
-            before=before_date_unix,
-        )
-        before_date_str = cur_recently_played[-1]['played_at']
-        before_date_unix = convert_str_to_unix_time(before_date_str)
-
-        tracks_remaining -= cur_limit
-        recently_played.extend(cur_recently_played)
-
-    return [d['track'] for d in recently_played]
