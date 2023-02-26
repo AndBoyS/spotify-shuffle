@@ -38,13 +38,14 @@ class SequentialShuffler:
         old_idx = list(range(self.num_items))
 
         if self.idx_to_postpone:
-            first_target_idx = old_idx[:-len(self.idx_to_postpone)]  # not postponed
+            input_idx = [i for i in old_idx if i not in self.idx_to_postpone]  # not postponed
+            target_idx = old_idx[:-len(self.idx_to_postpone)]
             postponed_target_idx = old_idx[-len(self.idx_to_postpone):]
         else:
-            first_target_idx = old_idx
+            input_idx = target_idx = old_idx
             postponed_target_idx = []
 
-        mapping = self.generate_random_mapping(old_idx, first_target_idx)
+        mapping = self.generate_random_mapping(input_idx, target_idx)
         mapping.update(self.generate_random_mapping(self.idx_to_postpone, postponed_target_idx))
 
         self.mapping = mapping
