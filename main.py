@@ -22,11 +22,11 @@ postpone_recent = args.postpone_recent
 
 @spotify_custom.with_spotify_scope
 async def main(
-        playlist_id,
-        postpone_recent=True,
+        playlist_id: str,
+        postpone_recent: bool = True,
         *,
-        client,
-        user
+        client: spotify.Client,
+        user: spotify_custom.User,
         ):
 
     def get_track_name(track: spotify.Track) -> str:
