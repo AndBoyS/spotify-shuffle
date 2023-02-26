@@ -15,9 +15,9 @@ parser.add_argument('playlist_id', type=str,
 parser.add_argument('postpone_recent', type=bool, default=True, nargs='?',
                     help='Move recently listened tracks to the end of the playlist')
 
-playlist_id = parser.parse_args().playlist_id
-
-# playlist_id = '2uBBMdBcJWHPIshXDpze05'
+args = parser.parse_args()
+playlist_id = args.playlist_id
+postpone_recent = args.postpone_recent
 
 
 @spotify_custom.with_spotify_scope
@@ -57,5 +57,5 @@ async def main(
 
 if __name__ == '__main__':
     asyncio.get_event_loop().run_until_complete(
-        main(playlist_id)
+        main(playlist_id, postpone_recent)
     )
