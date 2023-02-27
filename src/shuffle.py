@@ -15,7 +15,7 @@ class SequentialShuffler:
             idx_to_postpone: Optional[List[int]] = None,
             ) -> None:
         self.num_items = num_items
-        self.idx_to_postpone = idx_to_postpone or []
+        self.idx_to_postpone = set(idx_to_postpone) or set()
         self.init_shuffle()
 
     def generate_random_mapping(
