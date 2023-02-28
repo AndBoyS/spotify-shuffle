@@ -1,5 +1,6 @@
 import argparse
 import asyncio
+from typing import List
 
 from tqdm import tqdm
 
@@ -12,18 +13,18 @@ parser = argparse.ArgumentParser(
 )
 parser.add_argument('playlist_id', type=str,
                     help='Playlist id')
-parser.add_argument('postpone_recent', type=bool, default=True, nargs='?',
-                    help='Move recently listened tracks to the end of the playlist')
+parser.add_argument('postpone_previous_amount', type=int, default=200, nargs='?',
+                    help='Move the specified amount of recently listened tracks to the end of the playlist')
 
 args = parser.parse_args()
 playlist_id = args.playlist_id
-postpone_recent = args.postpone_recent
+postpone_previous_amount = args.postpone_previous_amount
 
 
 @spotify_custom.with_spotify_scope
 async def main(
         playlist_id: str,
-        postpone_recent: bool = True,
+        postpone_previous_amount: int = 200,
         *,
         client: spotify.Client,
         user: spotify_custom.User,
@@ -33,17 +34,33 @@ async def main(
         artist = track.artist.name or 'Unknown artist'
         return f'{track.name} - {artist}'
 
+    def get_recent_tracks_idx(
+            all_tracks: List[spotify.Track],
+            recent_track_dicts: List[dict],
+            postpone_previous_amount: int,
+            ) -> List[int]:
+        all_tracks_names = [get_track_name(track) for track in all_tracks]
+        recent_tracks_names = [get_track_name(d['track']) for d in recent_track_dicts]
+        recent_tracks_idx = [all_tracks_names.index(track_name) for track_name in recent_tracks_names
+                             if track_name in all_tracks_names]
+        # Implying that the tracks in the tracks were listened in the same order as they are in the playlist
+        # This is done because we cant get more than 50 recent tracks
+        if recent_tracks_idx:
+            last_idx = max(recent_tracks_idx)
+            first_idx = max(last_idx - postpone_previous_amount, 0)
+            return list(range(first_idx, last_idx))
+        else:
+            return []
+
+
     all_tracks = await spotify_custom.get_all_tracks_from_playlist(playlist_id, client)
     num_tracks = len(all_tracks)
 
     idx_to_postpone = None
 
-    if postpone_recent:
+    if postpone_previous_amount > 0:
         recent_track_dicts = await user.recently_played(limit=50)
-        all_tracks_names = [get_track_name(track) for track in all_tracks]
-        recent_tracks_names = [get_track_name(d['track']) for d in recent_track_dicts]
-        idx_to_postpone = [all_tracks_names.index(track_name) for track_name in recent_tracks_names
-                           if track_name in all_tracks_names]
+        idx_to_postpone = get_recent_tracks_idx(all_tracks, recent_track_dicts, postpone_previous_amount)
 
     shuffler = shuffle.SequentialShuffler(
         num_tracks,
@@ -57,5 +74,5 @@ async def main(
 
 if __name__ == '__main__':
     asyncio.get_event_loop().run_until_complete(
-        main(playlist_id, postpone_recent)
+        main(playlist_id, postpone_previous_amount)
     )
