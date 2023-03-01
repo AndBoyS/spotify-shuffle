@@ -43,15 +43,15 @@ async def main(
         recent_tracks_names = [get_track_name(d['track']) for d in recent_track_dicts]
         recent_tracks_idx = [all_tracks_names.index(track_name) for track_name in recent_tracks_names
                              if track_name in all_tracks_names]
-        # Implying that the tracks in the tracks were listened in the same order as they are in the playlist
-        # This is done because we cant get more than 50 recent tracks
         if recent_tracks_idx:
-            last_idx = max(recent_tracks_idx)
+            # The most recent track is the first one in the list
+            # we filtered out the tracks not from the playlist
+            # this script should work fine if at least one song has been listened between runs of this script
+            last_idx = recent_tracks_idx[0]
             first_idx = max(last_idx - postpone_previous_amount, 0)
             return list(range(first_idx, last_idx))
         else:
             return []
-
 
     all_tracks = await spotify_custom.get_all_tracks_from_playlist(playlist_id, client)
     num_tracks = len(all_tracks)
