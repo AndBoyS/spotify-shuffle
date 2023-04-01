@@ -30,10 +30,6 @@ async def main(
         user: spotify_custom.User,
         ):
 
-    def get_track_name(track: spotify.Track) -> str:
-        artist = track.artist.name or 'Unknown artist'
-        return f'{track.name} - {artist}'
-
     def get_recent_tracks_idx(
             all_tracks: List[spotify.Track],
             recent_track_dicts: List[dict],
