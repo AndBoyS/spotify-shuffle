@@ -38,16 +38,19 @@ async def main(
             all_tracks: List[spotify.Track],
             recent_track_dicts: List[dict],
             postpone_previous_amount: int,
+            playlist_id: str,
             ) -> List[int]:
-        all_tracks_names = [get_track_name(track) for track in all_tracks]
-        recent_tracks_names = [get_track_name(d['track']) for d in recent_track_dicts]
-        recent_tracks_idx = [all_tracks_names.index(track_name) for track_name in recent_tracks_names
-                             if track_name in all_tracks_names]
-        if recent_tracks_idx:
+
+        playlist_uri = f'spotify:album:{playlist_id}'
+        recent_track_dicts = [d for d in recent_track_dicts
+                              if d['context'].uri == playlist_uri]
+
+        if recent_track_dicts:
             # The most recent track is the first one in the list
             # we filtered out the tracks not from the playlist
             # this script should work fine if at least one song has been listened between runs of this script
-            last_idx = recent_tracks_idx[0]
+            most_recent_track = recent_track_dicts[0]['track']
+            last_idx = all_tracks.index(most_recent_track)
             first_idx = max(last_idx - postpone_previous_amount, 0)
             return list(range(first_idx, last_idx))
         else:
@@ -60,7 +63,12 @@ async def main(
 
     if postpone_previous_amount > 0:
         recent_track_dicts = await user.recently_played(limit=50)
-        idx_to_postpone = get_recent_tracks_idx(all_tracks, recent_track_dicts, postpone_previous_amount)
+        idx_to_postpone = get_recent_tracks_idx(
+            all_tracks,
+            recent_track_dicts,
+            postpone_previous_amount,
+            playlist_id,
+        )
 
     shuffler = shuffle.SequentialShuffler(
         num_tracks,
