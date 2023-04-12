@@ -32,16 +32,16 @@ async def main(
 
     def get_recent_tracks_in_playlist(
             recent_track_dicts: List[dict],
-            playlist_id: str,
+            all_playlist_tracks: List[spotify.Track],
             ) -> List[spotify.Track]:
+        all_playlist_urls = [track.uri for track in all_playlist_tracks]
 
-        playlist_uri = f'spotify:playlist:{playlist_id}'
         return [d['track'] for d in recent_track_dicts
-                if d['context'].uri == playlist_uri]
+                if d['context'].uri in all_playlist_urls]
 
     def early_shuffling_check(
             recent_tracks: List[spotify.Track],
-            all_playlist_tracks: List[spotify.PlaylistTrack],
+            all_playlist_tracks: List[spotify.Track],
             num_tracks_to_check: int = 10,
             ) -> None:
 
@@ -52,12 +52,18 @@ async def main(
         recent_tracks_idx = [all_playlist_urls.index(track.uri) for track in recent_tracks]
         # Checking monotonicity
         # order is from most recent to the least recent
-        condition = all(i > j for i, j in zip(recent_tracks_idx, recent_tracks_idx[1:]))
-        assert condition, '''
+        condition = all(i >= j for i, j in zip(recent_tracks_idx, recent_tracks_idx[1:]))
+
+        if not condition:
+            print('''
             Recent tracks are not in the correct order, 
             its possible that the playlist has been shuffled
             without listening to at least one song between runs of this script
-            '''
+            Still proceed?
+            ''')
+            output = input('yes/[no]').lower().strip()
+            if output != 'yes':
+                raise ValueError('Script aborted')
 
     def get_idx_to_postpone(
             recent_tracks: List[spotify.Track],
@@ -87,7 +93,7 @@ async def main(
         recent_track_dicts = await user.recently_played(limit=50)
         recent_tracks_in_playlist = get_recent_tracks_in_playlist(
             recent_track_dicts,
-            playlist_id,
+            all_playlist_tracks,
         )
         early_shuffling_check(recent_tracks_in_playlist, all_playlist_tracks)
         idx_to_postpone = get_idx_to_postpone(
