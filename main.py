@@ -37,7 +37,7 @@ async def main(
         all_playlist_urls = [track.uri for track in all_playlist_tracks]
 
         return [d['track'] for d in recent_track_dicts
-                if d['context'].uri in all_playlist_urls]
+                if d['track'].uri in all_playlist_urls]
 
     def early_shuffling_check(
             recent_tracks: List[spotify.Track],
