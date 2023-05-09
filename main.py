@@ -33,11 +33,19 @@ async def main(
     def get_recent_tracks_in_playlist(
             recent_track_dicts: List[dict],
             all_playlist_tracks: List[spotify.Track],
+            playlist_id: str,
             ) -> List[spotify.Track]:
-        all_playlist_urls = [track.uri for track in all_playlist_tracks]
+        # Filter tracks that were in playlist at the moment of listening
+        playlist_uri = f'spotify:playlist:{playlist_id}'
+        recent_tracks = [d['track'] for d in recent_track_dicts
+                         if d['context'].uri == playlist_uri]
 
-        return [d['track'] for d in recent_track_dicts
-                if d['track'].uri in all_playlist_urls]
+        # Filter tracks that are in playlist now
+        all_playlist_uris = [track.uri for track in all_playlist_tracks]
+        recent_tracks = [track for track in recent_tracks
+                         if track.uri in all_playlist_uris]
+
+        return recent_tracks
 
     def early_shuffling_check(
             recent_tracks: List[spotify.Track],
@@ -76,8 +84,10 @@ async def main(
 
         # The most recent track is the first one in the list
         # we filtered out the tracks not from the playlist
-        most_recent_track = recent_tracks[0]
-        last_idx = all_tracks.index(most_recent_track)
+        most_recent_track_uri = recent_tracks[0].uri
+        all_playlist_uris = [track.uri for track in all_playlist_tracks]
+
+        last_idx = all_playlist_uris.index(most_recent_track_uri)
         first_idx = max(last_idx - postpone_previous_amount, 0)
         return list(range(first_idx, last_idx))
 
@@ -94,6 +104,7 @@ async def main(
         recent_tracks_in_playlist = get_recent_tracks_in_playlist(
             recent_track_dicts,
             all_playlist_tracks,
+            playlist_id,
         )
         early_shuffling_check(recent_tracks_in_playlist, all_playlist_tracks)
         idx_to_postpone = get_idx_to_postpone(
