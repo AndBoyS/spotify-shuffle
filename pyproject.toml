@@ -10,6 +10,7 @@ packages = [{include = "spotify_shuffle"}]
 python = "^3.9"
 spotify = "^0.10.2"
 tqdm = "^4.64.1"
+requests = "^2.31.0"
 
 
 [build-system]
