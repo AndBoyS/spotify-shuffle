@@ -1,18 +1,24 @@
-[tool.poetry]
+[[tool.mypy.overrides]]
+module = [
+    "spotify.*",
+]
+ignore_missing_imports = true
+
+
+[project]
 name = "spotify-shuffle"
 version = "0.1.0"
-description = ""
-authors = ["AndBoyS <andboyxd@gmail.com>"]
+description = "Add your description here"
 readme = "README.md"
-packages = [{include = "spotify_shuffle"}]
-
-[tool.poetry.dependencies]
-python = "^3.9"
-spotify = "^0.10.2"
-tqdm = "^4.64.1"
-requests = "^2.31.0"
-
-
-[build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+authors = [
+    { name = "AndBoyS", email = "andboyxd@gmail.com" }
+]
+requires-python = ">=3.11"
+dependencies = [
+    "mypy>=1.14.0",
+    "requests>=2.32.3",
+    "spotify>=0.10.2",
+    "tqdm>=4.67.1",
+    "types-requests>=2.32.0.20241016",
+    "types-tqdm>=4.67.0.20241221",
+]

@@ -1,5 +1,5 @@
 import os
-from typing import Optional, List, Callable
+from collections.abc import Callable
 
 import spotify
 from spotify import HTTPUserClient
@@ -8,11 +8,11 @@ from spotify import HTTPUserClient
 class User(spotify.User):
     @classmethod
     async def from_token(
-            cls,
-            client: "spotify.Client",
-            token: Optional[str],
-            refresh_token: Optional[str] = None,
-            ) -> spotify.User:
+        cls,
+        client: "spotify.Client",
+        token: str | None = None,
+        refresh_token: str | None = None,
+    ) -> spotify.User:
         """Create a :class:`User` object from an access token.
 
         Parameters
@@ -33,9 +33,9 @@ class User(spotify.User):
 
 
 async def get_all_tracks_from_playlist(
-        playlist_id: str,
-        client: spotify.Client,
-        ) -> List[spotify.Track]:
+    playlist_id: str,
+    client: spotify.Client,
+) -> list[spotify.Track]:
     playlist_raw = await client.http.get_playlist(playlist_id)
     playlist = spotify.Playlist(client, playlist_raw)
     # 100 by default
@@ -45,17 +45,17 @@ async def get_all_tracks_from_playlist(
     return all_tracks
 
 
-def with_spotify_scope(func: Callable) -> Callable:
+def with_spotify_scope(func: Callable[..., None]) -> Callable[..., None]:
     """
     Decorator that inits spotify session
     Decorated functions must have keyword arguments client and user
     """
 
-    async def wrapper(*args, **kwargs):
-        client_id = os.environ['SPOTIFY_CLIENT_ID']
-        secret = os.environ['SPOTIFY_CLIENT_SECRET']
-        user_token = os.environ['SPOTIFY_REFRESH_TOKEN']
-        redirect_uri = 'http://localhost:8888/callback'
+    async def wrapper(*args, **kwargs) -> None:
+        client_id = os.environ["SPOTIFY_CLIENT_ID"]
+        secret = os.environ["SPOTIFY_CLIENT_SECRET"]
+        user_token = os.environ["SPOTIFY_REFRESH_TOKEN"]
+        redirect_uri = "http://localhost:8888/callback"
 
         async with spotify.Client(client_id, secret) as client:
             oauth2 = spotify.OAuth2.from_client(client, redirect_uri)
